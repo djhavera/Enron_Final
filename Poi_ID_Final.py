@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[116]:
+# In[24]:
 
 #!/usr/bin/python
 
@@ -34,60 +34,60 @@ with open("final_project_dataset.pkl", "r") as data_file:
 
 
 
-# In[117]:
+# In[25]:
 
 data_dict.pop('TOTAL',0)
 
 
-# In[118]:
+# In[26]:
 
 data_dict.pop('LOCKHART EUGENE E',0)
 
 
-# In[119]:
+# In[27]:
 
 data_dict.pop('THE TRAVEL AGENCY IN THE PARK',0)
 
 
-# In[120]:
+# In[28]:
 
 my_dataset = pd.DataFrame(data_dict)
 
 
 # There were 146 data points in this data set and now there are 143 data points.
 
-# In[121]:
+# In[29]:
 
 my_dataset.info()
 
 
-# In[122]:
+# In[30]:
 
 my_dataset_explorer = my_dataset.transpose()
 
 
-# In[123]:
+# In[31]:
 
 my_dataset_explorer.info()
 
 
 # There are 21 features including POI.
 
-# In[124]:
+# In[32]:
 
 my_dataset_explorer.groupby('poi')[['poi']].count()
 
 
 # There are only 18 POI's out of the 143 records
 
-# In[125]:
+# In[33]:
 
 #remove text feature
 email_df = my_dataset_explorer['email_address'].astype(str)
 my_dataset_explorer = my_dataset_explorer.drop('email_address', axis = 1)
 
 
-# In[126]:
+# In[34]:
 
 # Seperate the POI data to use for classifiers
 poi_df = my_dataset_explorer['poi'].astype(int)
@@ -95,53 +95,38 @@ poi_df = pd.DataFrame(poi_df)
 poi_df.head()
 
 
-# In[127]:
+# In[35]:
 
 my_dataset_explorer = my_dataset_explorer.drop('poi', axis = 1)
 
 
-# In[128]:
+# In[36]:
 
 my_dataset_explorer = my_dataset_explorer.replace('NaN',0.000000001)
 
 
-# In[129]:
+# In[37]:
 
 my_dataset_explorer.apply(pd.to_numeric)
 
 
-# In[130]:
+# In[38]:
 
 my_dataset_explorer.corrwith(poi_df['poi'])
 
 
-# The following have very little correlation with POI, so I will remove these features in addition to email_address.
-# restricted_stock_deferred   -0.021548
-# from_messages               -0.034671
-# deferral_payments           -0.039880
-# 
-# I now will have 17 features to explore.
-# 
-# I will run PCA on the six features that have the highest correlation:
-# exercised_stock_options      0.386853
-# total_stock_value            0.382623
-# bonus                        0.358486
-# salary                       0.338851
-# long_term_incentive          0.256405
-# deferred_income             -0.274150
-
-# In[131]:
+# In[39]:
 
 features_list = ['poi', 'exercised_stock_options', 'total_stock_value', 'bonus', 
                  'salary', 'long_term_incentive', 'deferred_income'] 
 
 
-# In[132]:
+# In[40]:
 
 my_dataset = my_dataset.replace('NaN',0.000000001)
 
 
-# In[133]:
+# In[41]:
 
 my_dataset.loc['cash_payments'] = (my_dataset.loc['bonus']  
                                     + my_dataset.loc['salary']
@@ -149,30 +134,30 @@ my_dataset.loc['cash_payments'] = (my_dataset.loc['bonus']
                                     + my_dataset.loc['director_fees'])
 
 
-# In[134]:
+# In[42]:
 
 features_list = ['poi', 'exercised_stock_options', 'total_stock_value', 'bonus', 
                  'salary', 'long_term_incentive', 'deferred_income', 'cash_payments'] 
 
 
-# In[135]:
+# In[43]:
 
 data = featureFormat(my_dataset, features_list, sort_keys=True)
 
 
-# In[136]:
+# In[44]:
 
 labels, features = targetFeatureSplit(data)
 
 
-# In[137]:
+# In[45]:
 
 from sklearn.cross_validation import train_test_split
 
-features_train, features_test, labels_train, labels_test =     train_test_split(features, labels, test_size=0.3, random_state=42)
+features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size=0.3, random_state=42)
 
 
-# In[138]:
+# In[46]:
 
 from sklearn.preprocessing import MinMaxScaler
 import math
@@ -183,7 +168,7 @@ scaled_features_train = scaler.fit_transform(features_train)
 scaled_features_test = scaler.fit_transform(features_test)
 
 
-# In[139]:
+# In[47]:
 
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.model_selection import GridSearchCV
@@ -192,45 +177,45 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, confusion_matrix, recall_score
 
 
-# In[140]:
+# In[48]:
 
 from sklearn.decomposition import PCA
 
 
-# In[141]:
+# In[49]:
 
 pca = PCA(n_components = 3)
 clf = GaussianNB()
 
 
-# In[142]:
+# In[50]:
 
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 sss = StratifiedShuffleSplit(100, test_size=0.5, random_state=42)
 
 
-# In[143]:
+# In[51]:
 
 pipeline = Pipeline([("pca", pca), ("classifier", clf)])
 
 
-# In[144]:
+# In[52]:
 
 param_grid = dict(pca__n_components=range(1,8))
                  
 
 
-# In[145]:
+# In[53]:
 
 grid_search = GridSearchCV(pipeline, param_grid=param_grid, scoring='f1', cv = sss)
 
 
-# In[146]:
+# In[54]:
 
 grid_fit = grid_search.fit(scaled_features_train, labels_train)
 
 
-# In[147]:
+# In[55]:
 
 from sklearn.metrics import fbeta_score, make_scorer
 from sklearn.model_selection import GridSearchCV
@@ -238,12 +223,12 @@ from sklearn.model_selection import GridSearchCV
 first_clf = grid_fit.best_estimator_
 
 
-# In[148]:
+# In[56]:
 
 print first_clf
 
 
-# In[149]:
+# In[57]:
 
 from sklearn.metrics import precision_recall_fscore_support
 pred_train_gb = first_clf.predict(scaled_features_train)
@@ -253,48 +238,48 @@ pred_test_gb = first_clf.predict(scaled_features_test)
 gb_test_acc = accuracy_score(pred_test_gb, labels_test)
 
 
-# In[150]:
+# In[58]:
 
 from sklearn.ensemble import RandomForestClassifier
 
 
-# In[151]:
+# In[59]:
 
 clf2 = RandomForestClassifier()
 
 
-# In[152]:
+# In[60]:
 
 pipeline2 = Pipeline([("pca", pca), ("classifier", clf2)])
 
 
-# In[153]:
+# In[61]:
 
 param_grid2 = dict(pca__n_components=range(1,8),
                  classifier__min_samples_split = (3, 50))
 
 
-# In[154]:
+# In[62]:
 
 grid_search2 = GridSearchCV(pipeline2, param_grid=param_grid2, scoring='f1', cv = sss)
 
 
-# In[155]:
+# In[63]:
 
 grid_fit2 = grid_search2.fit(scaled_features_train, labels_train)
 
 
-# In[156]:
+# In[64]:
 
 second_clf = grid_fit2.best_estimator_
 
 
-# In[157]:
+# In[65]:
 
 print second_clf
 
 
-# In[158]:
+# In[66]:
 
 pred_train_dt = second_clf.predict(scaled_features_train)
 dt_train_acc = accuracy_score(pred_train_dt, labels_train)
@@ -303,7 +288,7 @@ pred_test_dt = second_clf.predict(scaled_features_test)
 dt_test_acc = accuracy_score(pred_test_dt, labels_test)
 
 
-# In[159]:
+# In[67]:
 
 print ("gb_train_acc: "), gb_train_acc
 print ("gb_test_acc: "), gb_test_acc
@@ -313,12 +298,12 @@ print ("dt_test_acc: "), dt_test_acc
 print ("dt_train_precision_recall_fscore_support: "), dt_train_all
 
 
-# In[160]:
+# In[68]:
 
 dump_classifier_and_data(first_clf, my_dataset, features_list)
 
 
-# In[161]:
+# In[69]:
 
 from tester import test_classifier
 test_classifier(first_clf, my_dataset, features_list)
@@ -326,74 +311,74 @@ test_classifier(first_clf, my_dataset, features_list)
 
 # I wonder if removing the feature that I engineered (cash_payments) would improve the scores.  Let's try it.
 
-# In[162]:
+# In[70]:
 
 features_list = ['poi', 'exercised_stock_options', 'total_stock_value', 'bonus', 
                  'salary', 'long_term_incentive', 'deferred_income'] 
 
 
-# In[163]:
+# In[71]:
 
 data = featureFormat(my_dataset, features_list, sort_keys=True)
 
 
-# In[164]:
+# In[72]:
 
 labels, features = targetFeatureSplit(data)
 
 
-# In[165]:
+# In[73]:
 
 from sklearn.cross_validation import train_test_split
 
 features_train, features_test, labels_train, labels_test =     train_test_split(features, labels, test_size=0.3, random_state=42)
 
 
-# In[166]:
+# In[74]:
 
 scaler = MinMaxScaler()
 scaled_features_train = scaler.fit_transform(features_train)
 scaled_features_test = scaler.fit_transform(features_test)
 
 
-# In[167]:
+# In[75]:
 
 pca3 = PCA(n_components = 3)
 clf3 = GaussianNB()
 
 
-# In[168]:
+# In[76]:
 
 pipeline3 = Pipeline([("pca", pca3), ("classifier", clf3)])
 
 
-# In[169]:
+# In[77]:
 
 param_grid3 = dict(pca__n_components=range(1,7))
 
 
-# In[170]:
+# In[78]:
 
 grid_search3 = GridSearchCV(pipeline3, param_grid=param_grid3, scoring='f1', cv = sss)
 
 
-# In[171]:
+# In[79]:
 
 grid_fit3 = grid_search3.fit(scaled_features_train, labels_train)
 
 
-# In[172]:
+# In[80]:
 
 third_clf = grid_fit.best_estimator_
 print third_clf
 
 
-# In[173]:
+# In[81]:
 
 dump_classifier_and_data(third_clf, my_dataset, features_list)
 
 
-# In[174]:
+# In[82]:
 
 from tester import test_classifier
 test_classifier(third_clf, my_dataset, features_list)
